@@ -29,7 +29,8 @@ document.addEventListener('mousedown', e => {
     if (currentlyDrawn === undefined) {
         console.log ('Start drawing');
         // currentlyDrawn = createLine(point, point, '#FF0000');
-        currentlyDrawn = createCircle(point, 0, '#FF0000');
+        // currentlyDrawn = createCircle(point, 0, '#FF0000');
+        currentlyDrawn = createRectangle(point, 0, 0, '#FF0000');
         drawableObjects.push(currentlyDrawn);
     }
 });
@@ -110,12 +111,21 @@ function drawCircle(centerPoint, r, color) {
     ctx.stroke();
 }
 
+function drawRectangle(upperLeft, width, height, color) {
+
+    if (color) {
+        ctx.strokeStyle = color;
+    }
+
+    ctx.strokeRect(upperLeft.x, upperLeft.y, width, height);
+}
+
 function createLine(pointA, pointB, color) {
     console.log(`Creating line: [${pointA.x}, ${pointA.y}] [${color}]`);
     let newLine = {
-        pointA: pointA,
-        pointB: pointB,
-        color: color, 
+        pointA,
+        pointB,
+        color,
         draw() {
             drawLine(this.pointA, this.pointB, this.color);
         }
@@ -134,7 +144,7 @@ function createCircle(centerPoint, r, color) {
     let newCircle = {
         center: centerPoint,
         radius: r,
-        color: color,
+        color,
         draw() {
             drawCircle(this.center, this.radius, this.color);
         }
@@ -146,6 +156,27 @@ function createCircle(centerPoint, r, color) {
     }
 
     return newCircle;
+}
+
+function createRectangle(upperLeft, width, height, color) {
+    console.log(`Creating rectangle: [${upperLeft.x}, ${upperLeft.y}] [${width}x${height}] [${color}]`);
+    let newRectangle = {
+       upperLeft,
+       width,
+       height,
+       color,
+       draw() {
+        drawRectangle(this.upperLeft, this.width, this.height, this.color);
+       }
+    };
+
+    // Add update method with mouse coordinates
+    newRectangle.update = function (x, y) {
+        this.width =  x - this.upperLeft.x;
+        this.height =  y - this.upperLeft.y;
+    };
+
+    return newRectangle;
 }
 
 function drawObjects() {
