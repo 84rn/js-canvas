@@ -129,6 +129,12 @@ function drawFPS(fps, x = 0, y = 40) {
     ctx.fillText(fps, x, y);
 }
 
+function drawObjectNumber() {
+    ctx.clearRect(0, 0, 160, 50);
+    ctx.font = '48px serif';
+    ctx.fillText(drawableObjects.length, 0, 40);
+}
+
 function drawLine(pointA, pointB, color) {
 
     if (color) {
@@ -143,21 +149,21 @@ function drawLine(pointA, pointB, color) {
 function drawCircle(centerPoint, r, color) {
 
     if (color) {
-        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
     }
 
     ctx.beginPath();
     ctx.arc(centerPoint.x, centerPoint.y, r, 0, 2 * Math.PI);
-    ctx.stroke();
+    ctx.fill();
 }
 
 function drawRectangle(upperLeft, width, height, color) {
 
     if (color) {
-        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
     }
 
-    ctx.strokeRect(upperLeft.x, upperLeft.y, width, height);
+    ctx.fillRect(upperLeft.x, upperLeft.y, width, height);
 }
 
 function createLine(pointA, pointB, color) {
@@ -219,6 +225,33 @@ function createRectangle(upperLeft, width, height, color) {
     return newRectangle;
 }
 
+function createRandomPoint() {
+    return {
+        x: Math.floor(Math.random() * ctx.canvas.width),
+        y: Math.floor(Math.random() * ctx.canvas.height),
+    }
+}
+
+function createRandomColor() {
+    return '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16);
+}
+
+function createRandomObject() {
+    let choice = Math.floor(Math.random() * shapeSelector.shapes.length);
+    let newObject = undefined;
+
+    switch (choice) {
+        case 0: newObject = createLine(createRandomPoint(), createRandomPoint(), createRandomColor());
+                break;
+        case 1: newObject = createCircle(createRandomPoint(), Math.random() * 100, createRandomColor());
+                break;
+        case 2: newObject = createRectangle(createRandomPoint(), Math.floor(Math.random() * 100), Math.floor(Math.random() * 100), createRandomColor());
+                break;
+    }
+
+    return newObject;
+}
+
 function drawObjects() {
     for (ob of drawableObjects) {
         ob.draw();
@@ -226,11 +259,13 @@ function drawObjects() {
 }
 function drawScene() {
     drawObjects();
+    drawObjectNumber();
     // drawFPS(fps);
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     drawScene();
 }
 
@@ -239,4 +274,6 @@ function update(milliseconds) {
 }
 
 function moveScene(milliseconds) {
+    drawableObjects.push(createRandomObject());
+
 }
