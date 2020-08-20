@@ -21,7 +21,8 @@ document.addEventListener('mousedown', e => {
 
     if (currentlyDrawn === undefined) {
         console.log ('Start drawing');
-        currentlyDrawn = createLine(point, point, '#FF0000');
+        // currentlyDrawn = createLine(point, point, '#FF0000');
+        currentlyDrawn = createCircle(point, 0, '#FF0000');
         drawableObjects.push(currentlyDrawn);
     }
 });
@@ -72,6 +73,17 @@ function drawLine(pointA, pointB, color) {
     ctx.stroke();
 }
 
+function drawCircle(centerPoint, r, color) {
+
+    if (color) {
+        ctx.strokeStyle = color;
+    }
+
+    ctx.beginPath();
+    ctx.arc(centerPoint.x, centerPoint.y, r, 0, 2 * Math.PI);
+    ctx.stroke();
+}
+
 function gameLoop(timestamp) {
     elapsed = timestamp - last;
     fps = Math.floor(1000 / elapsed);
@@ -86,7 +98,7 @@ function gameLoop(timestamp) {
 }
 
 function createLine(pointA, pointB, color) {
-    console.log(`Creating line: [${pointA.x}, ${pointA.y} [${pointB.x}, ${pointB.y}] [${color}]`);
+    console.log(`Creating line: [${pointA.x}, ${pointA.y}] [${color}]`);
     let newLine = {
         pointA: pointA,
         pointB: pointB,
@@ -102,6 +114,25 @@ function createLine(pointA, pointB, color) {
     }
 
     return newLine;
+}
+
+function createCircle(centerPoint, r, color) {
+    console.log(`Creating circle: [${centerPoint.x}, ${centerPoint.y}] [${color}]`);
+    let newCircle = {
+        center: centerPoint,
+        radius: r,
+        color: color,
+        draw() {
+            drawCircle(this.center, this.radius, this.color);
+        }
+    };
+
+    // Add update method with mouse coordinates
+    newCircle.update = function (x, y) {
+        this.radius = Math.sqrt(Math.pow(this.center.x - x, 2) + Math.pow(this.center.y - y, 2));
+    }
+
+    return newCircle;
 }
 
 function drawObjects() {
