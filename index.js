@@ -12,6 +12,39 @@ let elapsed = 0;
 let drawableObjects = [];
 let currentlyDrawn = undefined;
 
+let shapeLine = {
+    create(point, color) {
+        return createLine(point, point, color);
+    }
+}
+
+let shapeCircle = {
+    create(point, color) {
+        return createCircle(point, 0, color);
+    }
+}
+
+let shapeRectangle = {
+    create(point, color) {
+        return createRectangle(point, 0, 0, color);
+    }
+}
+
+let shapes = [shapeLine, shapeRectangle, shapeCircle];
+
+let shapeSelector = {
+    shapes: shapes,
+    selected: shapeLine,
+    select(shape) {
+
+    },
+    nextShape() {
+        let index = shapes.indexOf(this.selected);
+        let nextIndex = (index + 1 == shapes.length ? 0 : index + 1);
+        this.selected = this.shapes[nextIndex];
+    }
+}
+
 
 // ---------------- FUNCTIONS ----------------
 
@@ -25,13 +58,19 @@ document.addEventListener('mousedown', e => {
         y: e.clientY
     };
 
-    // If not already drawing...
-    if (currentlyDrawn === undefined) {
-        console.log ('Start drawing');
-        // currentlyDrawn = createLine(point, point, '#FF0000');
-        // currentlyDrawn = createCircle(point, 0, '#FF0000');
-        currentlyDrawn = createRectangle(point, 0, 0, '#FF0000');
-        drawableObjects.push(currentlyDrawn);
+    // Left mouse button
+    if (e.buttons == 1) {
+        // If not already drawing...
+        if (currentlyDrawn === undefined) {
+            console.log ('Start drawing');
+            // get create function, pass the point, initial size 0, color
+            let createShape = shapeSelector.selected.create;
+            currentlyDrawn = createShape(point, '#FF0000');
+            drawableObjects.push(currentlyDrawn);
+        }
+    // Center mouse button
+    } else if (e.buttons == 4) {
+        shapeSelector.nextShape();
     }
 });
 
@@ -41,6 +80,7 @@ document.addEventListener('mousemove', e => {
         y: e.clientY
     };
 
+    // Left mouse button
     if (e.buttons == 1)  {
         // Check for drawing
         if (currentlyDrawn) {
