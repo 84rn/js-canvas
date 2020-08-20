@@ -11,6 +11,7 @@ let fps = 0;
 let elapsed = 0;
 
 let drawableObjects = [];
+let currentlyDrawn = undefined;
 
 document.addEventListener('mousedown', e => {
     let point = {
@@ -18,8 +19,38 @@ document.addEventListener('mousedown', e => {
         y: e.clientY
     };
 
-    createLine({x: 0, y: 0}, point, '#FF0000');
+    if (currentlyDrawn === undefined) {
+        console.log ('Start drawing');
+        currentlyDrawn = createLine(point, point, '#FF0000');
+        drawableObjects.push(currentlyDrawn);
+    }
+});
 
+document.addEventListener('mousemove', e => {
+    let point = {
+        x: e.clientX,
+        y: e.clientY
+    };
+
+    // Check for dragging
+    if (e.buttons == 1)  {
+        if (currentlyDrawn) {
+            currentlyDrawn.update(e.x, e.y);
+        }
+    }
+});
+
+document.addEventListener('mouseup', e => {
+    let point = {
+        x: e.clientX,
+        y: e.clientY
+    };
+
+    if (currentlyDrawn) {
+        delete currentlyDrawn.update;
+        console.log ('Stopped drawing');
+        currentlyDrawn = undefined;
+    }
 })
 window.requestAnimationFrame(gameLoop);
 
@@ -56,14 +87,21 @@ function gameLoop(timestamp) {
 
 function createLine(pointA, pointB, color) {
     console.log(`Creating line: [${pointA.x}, ${pointA.y} [${pointB.x}, ${pointB.y}] [${color}]`);
-    drawableObjects.push({
-                        pointA: pointA,
-                        pointB: pointB,
-                        color: color, 
-                        draw() {
-                            drawLine(this.pointA, this.pointB, this.color);
-                        }
-                    });
+    let newLine = {
+        pointA: pointA,
+        pointB: pointB,
+        color: color, 
+        draw() {
+            drawLine(this.pointA, this.pointB, this.color);
+        }
+    }
+
+    // Add update method with mouse coordinates
+    newLine.update = function (x, y) {
+        this.pointB = {x, y};
+    }
+
+    return newLine;
 }
 
 function drawObjects() {
@@ -73,7 +111,7 @@ function drawObjects() {
 }
 function drawScene() {
     drawObjects();
-    drawFPS(fps);
+    // drawFPS(fps);
 }
 
 function draw() {
