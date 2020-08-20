@@ -84,7 +84,7 @@ document.addEventListener('mousemove', e => {
     if (e.buttons == 1)  {
         // Check for drawing
         if (currentlyDrawn) {
-            currentlyDrawn.update(e.x, e.y);
+            currentlyDrawn.update(point.x, point.y);
         }
     }
 });
