@@ -10,7 +10,17 @@ let last = 0;
 let fps = 0;
 let elapsed = 0;
 
+let drawableObjects = [];
 
+document.addEventListener('mousedown', e => {
+    let point = {
+        x: e.clientX,
+        y: e.clientY
+    };
+
+    createLine({x: 0, y: 0}, point, '#FF0000');
+
+})
 window.requestAnimationFrame(gameLoop);
 
 
@@ -44,7 +54,25 @@ function gameLoop(timestamp) {
     requestAnimationFrame(gameLoop);
 }
 
+function createLine(pointA, pointB, color) {
+    console.log(`Creating line: [${pointA.x}, ${pointA.y} [${pointB.x}, ${pointB.y}] [${color}]`);
+    drawableObjects.push({
+                        pointA: pointA,
+                        pointB: pointB,
+                        color: color, 
+                        draw() {
+                            drawLine(this.pointA, this.pointB, this.color);
+                        }
+                    });
+}
+
+function drawObjects() {
+    for (ob of drawableObjects) {
+        ob.draw();
+    }
+}
 function drawScene() {
+    drawObjects();
     drawFPS(fps);
 }
 
