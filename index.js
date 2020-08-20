@@ -65,7 +65,7 @@ document.addEventListener('mousedown', e => {
             console.log ('Start drawing');
             // get create function, pass the point, initial size 0, color
             let createShape = shapeSelector.selected.create;
-            currentlyDrawn = createShape(point, '#FF0000');
+            currentlyDrawn = createShape(point, new RandomColor().css);
             drawableObjects.push(currentlyDrawn);
         }
     // Center mouse button
@@ -268,6 +268,6 @@ function update(milliseconds) {
 }
 
 function moveScene(milliseconds) {
-    drawableObjects.push(new RandomObject());
+    // drawableObjects.push(new RandomObject());
 
 }
