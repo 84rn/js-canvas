@@ -14,19 +14,19 @@ let currentlyDrawn = undefined;
 
 let shapeLine = {
     create(point, color) {
-        return createLine(point, point, color);
+        return new Line(point, point, color);
     }
 }
 
 let shapeCircle = {
     create(point, color) {
-        return createCircle(point, 0, color);
+        return new Circle(point, 0, color);
     }
 }
 
 let shapeRectangle = {
     create(point, color) {
-        return createRectangle(point, 0, 0, color);
+        return new Rectangle(point, 0, 0, color);
     }
 }
 
@@ -166,86 +166,80 @@ function drawRectangle(upperLeft, width, height, color) {
     ctx.fillRect(upperLeft.x, upperLeft.y, width, height);
 }
 
-function createLine(pointA, pointB, color) {
+function Line(pointA, pointB, color) {
     console.log(`Creating line: [${pointA.x}, ${pointA.y}] [${color}]`);
-    let newLine = {
-        pointA,
-        pointB,
-        color,
-        draw() {
-            drawLine(this.pointA, this.pointB, this.color);
-        }
-    }
+    this.pointA = pointA;
+    this.pointB = pointB;
+    this.color = color;
+
+    this.draw = function () {
+        drawLine(this.pointA, this.pointB, this.color);
+    };
 
     // Add update method with mouse coordinates
-    newLine.update = function (x, y) {
+    this.update = function (x, y) {
         this.pointB = {x, y};
     }
-
-    return newLine;
 }
 
-function createCircle(centerPoint, r, color) {
+function Circle(centerPoint, r, color) {
     console.log(`Creating circle: [${centerPoint.x}, ${centerPoint.y}] [${color}]`);
-    let newCircle = {
-        center: centerPoint,
-        radius: r,
-        color,
-        draw() {
-            drawCircle(this.center, this.radius, this.color);
-        }
+    this.center = centerPoint;
+    this.radius = r;
+    this.color = color;
+
+    this.draw = function () {
+        drawCircle(this.center, this.radius, this.color);
     };
 
     // Add update method with mouse coordinates
-    newCircle.update = function (x, y) {
+    this.update = function (x, y) {
         this.radius = Math.sqrt(Math.pow(this.center.x - x, 2) + Math.pow(this.center.y - y, 2));
     }
-
-    return newCircle;
 }
 
-function createRectangle(upperLeft, width, height, color) {
+function Rectangle(upperLeft, width, height, color) {
     console.log(`Creating rectangle: [${upperLeft.x}, ${upperLeft.y}] [${width}x${height}] [${color}]`);
-    let newRectangle = {
-       upperLeft,
-       width,
-       height,
-       color,
-       draw() {
+    this.upperLeft = upperLeft;
+    this.width = width;
+    this.height = height;
+    this.color = color;
+
+    this.draw = function () {
         drawRectangle(this.upperLeft, this.width, this.height, this.color);
-       }
     };
 
     // Add update method with mouse coordinates
-    newRectangle.update = function (x, y) {
+    this.update = function (x, y) {
         this.width =  x - this.upperLeft.x;
         this.height =  y - this.upperLeft.y;
     };
-
-    return newRectangle;
 }
 
-function createRandomPoint() {
-    return {
-        x: Math.floor(Math.random() * ctx.canvas.width),
-        y: Math.floor(Math.random() * ctx.canvas.height),
-    }
+function RandomPoint() {
+    this.x = Math.floor(Math.random() * ctx.canvas.width);
+    this.y = Math.floor(Math.random() * ctx.canvas.height);
 }
 
-function createRandomColor() {
-    return '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16);
+function RandomLength(max) {
+    this.value = Math.floor(Math.random() * max);
 }
 
-function createRandomObject() {
+function RandomColor() {
+    this.value = Math.floor(Math.random() * 0xFFFFFF);
+    this.css = '#' + this.value.toString(16);
+}
+
+function RandomObject() {
     let choice = Math.floor(Math.random() * shapeSelector.shapes.length);
     let newObject = undefined;
 
     switch (choice) {
-        case 0: newObject = createLine(createRandomPoint(), createRandomPoint(), createRandomColor());
+        case 0: newObject = new Line(new RandomPoint(), new RandomPoint(), new RandomColor().css);
                 break;
-        case 1: newObject = createCircle(createRandomPoint(), Math.random() * 100, createRandomColor());
+        case 1: newObject = new Circle(new RandomPoint(), new RandomLength(300).value, new RandomColor().css);
                 break;
-        case 2: newObject = createRectangle(createRandomPoint(), Math.floor(Math.random() * 100), Math.floor(Math.random() * 100), createRandomColor());
+        case 2: newObject = new Rectangle(new RandomPoint(), new RandomLength(300).value, new RandomLength(300).value, new RandomColor().css);
                 break;
     }
 
@@ -274,6 +268,6 @@ function update(milliseconds) {
 }
 
 function moveScene(milliseconds) {
-    drawableObjects.push(createRandomObject());
+    drawableObjects.push(new RandomObject());
 
 }
