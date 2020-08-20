@@ -1,10 +1,9 @@
+// ---------------- DATA ----------------
+
 let canvas = document.getElementById('app-canvas');
 let ctx = canvas.getContext('2d');
 
-// Set canvas w x h
-ctx.canvas.width = window.innerWidth;
-ctx.canvas.height = window.innerHeight;
-
+// Canvas animation data
 let frame = 0n;
 let last = 0;
 let fps = 0;
@@ -13,12 +12,20 @@ let elapsed = 0;
 let drawableObjects = [];
 let currentlyDrawn = undefined;
 
+
+// ---------------- FUNCTIONS ----------------
+
+// Set canvas w x h
+ctx.canvas.width = window.innerWidth;
+ctx.canvas.height = window.innerHeight;
+
 document.addEventListener('mousedown', e => {
     let point = {
         x: e.clientX,
         y: e.clientY
     };
 
+    // If not already drawing...
     if (currentlyDrawn === undefined) {
         console.log ('Start drawing');
         // currentlyDrawn = createLine(point, point, '#FF0000');
@@ -33,8 +40,8 @@ document.addEventListener('mousemove', e => {
         y: e.clientY
     };
 
-    // Check for dragging
     if (e.buttons == 1)  {
+        // Check for drawing
         if (currentlyDrawn) {
             currentlyDrawn.update(e.x, e.y);
         }
@@ -47,14 +54,33 @@ document.addEventListener('mouseup', e => {
         y: e.clientY
     };
 
+    // Finish drawing
     if (currentlyDrawn) {
+        // This is not needed after drawing is finished
+        // TODO: move this to class and leave for object manipulation
         delete currentlyDrawn.update;
         console.log ('Stopped drawing');
         currentlyDrawn = undefined;
     }
 })
+
+// Request first frame and install the callback
 window.requestAnimationFrame(gameLoop);
 
+
+// ---------------- FUNCTIONS ----------------
+
+function gameLoop(timestamp) {
+    elapsed = timestamp - last;
+    fps = Math.floor(1000 / elapsed);
+    last = timestamp;
+    ++frame;
+
+    update(elapsed);
+    draw();
+
+    requestAnimationFrame(gameLoop);
+}
 
 function drawFPS(fps, x = 0, y = 40) {
     ctx.clearRect(0, 0, 60, 50);
@@ -82,19 +108,6 @@ function drawCircle(centerPoint, r, color) {
     ctx.beginPath();
     ctx.arc(centerPoint.x, centerPoint.y, r, 0, 2 * Math.PI);
     ctx.stroke();
-}
-
-function gameLoop(timestamp) {
-    elapsed = timestamp - last;
-    fps = Math.floor(1000 / elapsed);
-   
-    last = timestamp;
-    ++frame;
-
-    update(elapsed);
-    draw();
-
-    requestAnimationFrame(gameLoop);
 }
 
 function createLine(pointA, pointB, color) {
