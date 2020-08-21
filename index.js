@@ -197,7 +197,6 @@ function RandomObject() {
 }
 
 function drawLine(pointA, pointB, color) {
-
     if (color) {
         ctx.strokeStyle = color;
     }
@@ -208,7 +207,6 @@ function drawLine(pointA, pointB, color) {
 }
 
 function drawCircle(centerPoint, r, color) {
-
     if (color) {
         ctx.fillStyle = color;
     }
@@ -219,7 +217,6 @@ function drawCircle(centerPoint, r, color) {
 }
 
 function drawRectangle(upperLeft, width, height, color) {
-
     if (color) {
         ctx.fillStyle = color;
     }
@@ -251,9 +248,8 @@ function drawScene() {
     // drawFPS(fps);
 }
 
-function draw() {
+function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     drawScene();
 }
 
@@ -273,7 +269,7 @@ function gameLoop(timestamp) {
     ++frame;
 
     update(elapsed);
-    draw();
+    render();
 
     requestAnimationFrame(gameLoop);
 }
