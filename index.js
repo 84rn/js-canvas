@@ -1,5 +1,6 @@
 // ---------------- DATA ----------------
 
+// Get HTML canvas
 let canvas = document.getElementById('app-canvas');
 let ctx = canvas.getContext('2d');
 
@@ -12,6 +13,7 @@ let elapsed = 0;
 let drawableObjects = [];
 let currentlyDrawn = undefined;
 
+// Available shapes
 let shapeLine = {
     create(point, color) {
         return new Line(point, point, color);
@@ -46,11 +48,17 @@ let shapeSelector = {
 }
 
 
-// ---------------- FUNCTIONS ----------------
+// ---------------- CODE ----------------
 
 // Set canvas w x h
 ctx.canvas.width = window.innerWidth;
 ctx.canvas.height = window.innerHeight;
+
+// Request first frame and install the callback
+window.requestAnimationFrame(gameLoop);
+
+
+// ----------- EVENT HANDLERS -----------
 
 document.addEventListener('mousedown', e => {
     let point = {
@@ -105,66 +113,8 @@ document.addEventListener('mouseup', e => {
     }
 })
 
-// Request first frame and install the callback
-window.requestAnimationFrame(gameLoop);
-
 
 // ---------------- FUNCTIONS ----------------
-
-function gameLoop(timestamp) {
-    elapsed = timestamp - last;
-    fps = Math.floor(1000 / elapsed);
-    last = timestamp;
-    ++frame;
-
-    update(elapsed);
-    draw();
-
-    requestAnimationFrame(gameLoop);
-}
-
-function drawFPS(fps, x = 0, y = 40) {
-    ctx.clearRect(0, 0, 60, 50);
-    ctx.font = '48px serif';
-    ctx.fillText(fps, x, y);
-}
-
-function drawObjectNumber() {
-    ctx.clearRect(0, 0, 160, 50);
-    ctx.font = '48px serif';
-    ctx.fillText(drawableObjects.length, 0, 40);
-}
-
-function drawLine(pointA, pointB, color) {
-
-    if (color) {
-        ctx.strokeStyle = color;
-    }
-    ctx.beginPath();
-    ctx.moveTo(pointA.x, pointA.y);
-    ctx.lineTo(pointB.x, pointB.y);
-    ctx.stroke();
-}
-
-function drawCircle(centerPoint, r, color) {
-
-    if (color) {
-        ctx.fillStyle = color;
-    }
-
-    ctx.beginPath();
-    ctx.arc(centerPoint.x, centerPoint.y, r, 0, 2 * Math.PI);
-    ctx.fill();
-}
-
-function drawRectangle(upperLeft, width, height, color) {
-
-    if (color) {
-        ctx.fillStyle = color;
-    }
-
-    ctx.fillRect(upperLeft.x, upperLeft.y, width, height);
-}
 
 function Line(pointA, pointB, color) {
     console.log(`Creating line: [${pointA.x}, ${pointA.y}] [${color}]`);
@@ -246,14 +196,58 @@ function RandomObject() {
     return newObject;
 }
 
+function drawLine(pointA, pointB, color) {
+
+    if (color) {
+        ctx.strokeStyle = color;
+    }
+    ctx.beginPath();
+    ctx.moveTo(pointA.x, pointA.y);
+    ctx.lineTo(pointB.x, pointB.y);
+    ctx.stroke();
+}
+
+function drawCircle(centerPoint, r, color) {
+
+    if (color) {
+        ctx.fillStyle = color;
+    }
+
+    ctx.beginPath();
+    ctx.arc(centerPoint.x, centerPoint.y, r, 0, 2 * Math.PI);
+    ctx.fill();
+}
+
+function drawRectangle(upperLeft, width, height, color) {
+
+    if (color) {
+        ctx.fillStyle = color;
+    }
+
+    ctx.fillRect(upperLeft.x, upperLeft.y, width, height);
+}
+
+function drawFPS(fps, x = 0, y = 40) {
+    ctx.clearRect(0, 0, 60, 50);
+    ctx.font = '48px serif';
+    ctx.fillText(fps, x, y);
+}
+
+function drawObjectNumber(array) {
+    ctx.clearRect(0, 0, 160, 50);
+    ctx.font = '48px serif';
+    ctx.fillText(array.length, 0, 40);
+}
+
 function drawObjects() {
     for (ob of drawableObjects) {
         ob.draw();
     }
 }
+
 function drawScene() {
     drawObjects();
-    drawObjectNumber();
+    drawObjectNumber(drawableObjects);
     // drawFPS(fps);
 }
 
@@ -270,4 +264,16 @@ function update(milliseconds) {
 function moveScene(milliseconds) {
     // drawableObjects.push(new RandomObject());
 
+}
+
+function gameLoop(timestamp) {
+    elapsed = timestamp - last;
+    fps = Math.floor(1000 / elapsed);
+    last = timestamp;
+    ++frame;
+
+    update(elapsed);
+    draw();
+
+    requestAnimationFrame(gameLoop);
 }
