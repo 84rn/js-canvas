@@ -32,7 +32,7 @@ let shapeRectangle = {
     }
 }
 
-let shapes = [shapeLine, shapeRectangle, shapeCircle];
+let shapes = [shapeLine, shapeCircle, shapeRectangle];
 
 let shapeSelector = {
     shapes: shapes,
@@ -48,228 +48,301 @@ let shapeSelector = {
 }
 
 
+// ---------------- CLASSES ------------------
+
+class Line {
+
+    constructor(pointA, pointB, color) {
+        console.log(`Creating line: [${pointA.x}, ${pointA.y}] [${color}]`);
+        this.pointA = pointA;
+        this.pointB = pointB;
+        this.color = color;
+    }
+
+    draw(ctx) {
+        this._draw(ctx, this.pointA, this.pointB, this.color);
+    }
+
+    update(newX, newY) {
+        this.pointB = {x: newX, y: newY};
+    }
+
+    _draw(ctx, pointA, pointB, color) {
+        if (color) {
+            ctx.strokeStyle = color;
+        }
+        ctx.beginPath();
+        ctx.moveTo(pointA.x, pointA.y);
+        ctx.lineTo(pointB.x, pointB.y);
+        ctx.stroke();
+    }
+}
+
+
+class Circle {
+ 
+    constructor(centerPoint, r, color) {
+        console.log(`Creating circle: [${centerPoint.x}, ${centerPoint.y}] [${r}] [${color}]`);
+        this.center = centerPoint;
+        this.radius = r;
+        this.color = color;
+    }
+
+    draw(ctx) {
+        this._draw(ctx, this.center, this.radius, this.color);
+    }
+
+    // Add update method with mouse coordinates
+    update(newX, newY) {
+        this.radius = Math.sqrt(Math.pow(this.center.x - newX, 2) + Math.pow(this.center.y - newY, 2));
+    }
+
+    _draw(ctx, centerPoint, r, color, fill = true) {
+        if (fill) {
+            ctx.fillStyle = color;
+        } else {
+            ctx.strokeStyle = color;
+        }
+
+        ctx.beginPath();
+        ctx.arc(centerPoint.x, centerPoint.y, r, 0, 2 * Math.PI);
+
+        if (fill) {
+            ctx.fill();
+        } else {
+            ctx.stroke();
+        }
+    }
+}
+
+
+class Rectangle {
+
+    constructor(anchorPoint, width, height, color) {
+        console.log(`Creating rectangle: [${anchorPoint.x}, ${anchorPoint.y}] [${width}x${height}] [${color}]`);
+        this.anchorPoint = anchorPoint;
+        this.width = width;
+        this.height = height;
+        this.color = color;
+    }
+
+    draw(ctx) {
+        this._draw(ctx, this.anchorPoint, this.width, this.height, this.color);
+    }
+
+    // Add update method with mouse coordinates
+    update(newX, newY) {
+        this.width = newX - this.anchorPoint.x;
+        this.height = newY - this.anchorPoint.y;
+    }
+
+    _draw(ctx, anchorPoint, width, height, color, fill = true) {
+        if (fill) {
+            ctx.fillStyle = color;
+        } else {
+            ctx.strokeStyle = color;
+        }
+
+        if (fill) {
+            ctx.fillRect(anchorPoint.x, anchorPoint.y, width, height);
+        } else {
+            ctx.strokeRect(anchorPoint.x, anchorPoint.y, width, height);
+        }
+    }
+}
+
+
+class RandomPoint {
+
+    constructor(ctx) {
+        this.x = Math.floor(Math.random() * ctx.canvas.width);
+        this.y = Math.floor(Math.random() * ctx.canvas.height);
+    }
+}
+
+
+class RandomLength {
+
+    constructor(maxLength) {
+        this.value = Math.floor(Math.random() * max);
+    }
+}
+
+
+class RandomColor {
+
+    constructor() {
+        this.value = Math.floor(Math.random() * 0xFFFFFF);
+        this.css = '#' + this.value.toString(16);
+    }
+}
+
+
+class RandomShape {
+
+    constructor() {
+        let choice = Math.floor(Math.random() * shapeSelector.shapes.length);
+        let newObject = undefined;
+
+        switch (choice) {
+            case 0: newObject = new Line(new RandomPoint(this.ctx), new RandomPoint(this.ctx), new RandomColor().css);
+            break;
+            case 1: newObject = new Circle(new RandomPoint(this.ctx), new RandomLength(300).value, new RandomColor().css);
+            break;
+            case 2: newObject = new Rectangle(new RandomPoint(this.ctx), new RandomLength(300).value, new RandomLength(300).value, new RandomColor().css);
+            break;
+        }
+
+        return newObject;
+    }
+}
+
+
+class Game {
+    constructor(canvasID) {
+        // Get HTML canvas
+        this.canvas = document.getElementById(canvasID);
+        this.ctx = this.canvas.getContext('2d');
+
+        // Set canvas w x h
+        this.ctx.canvas.width = window.innerWidth;
+        this.ctx.canvas.height = window.innerHeight;
+
+        // Canvas animation data
+        this.frame = 0n;
+        this.last = 0;
+        this.fps = 0;
+
+        this.drawableObjects = [];
+        this.currentlyDrawn = undefined;
+
+        // Bind the function to object for animation callback
+        this._loop = this._loop.bind(this);
+
+        this._installEventHandlers();
+    }
+
+    start() {
+        requestAnimationFrame(this._loop);
+    }
+
+    _drawFPS(x = 0, y = 40) {
+        this.ctx.clearRect(0, 0, 60, 50);
+        this.ctx.font = '48px serif';
+        this.ctx.fillText(fps, x, y);
+    }
+
+    _drawObjectNumber(array, x = 0, y = 40) {
+        ctx.clearRect(0, 0, 160, 50);
+        ctx.font = '48px serif';
+        ctx.fillText(array.length, x, y);
+    }
+
+    _drawObjects() {
+        for (let ob of this.drawableObjects) {
+            ob.draw(ctx);
+        }
+    }
+
+    _drawScene() {
+        this._drawObjects();
+        this._drawObjectNumber(this.drawableObjects);
+        // this._drawFPS(this.fps);
+    }
+
+    _render() {
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this._drawScene();
+    }
+
+    _update(milliseconds) {
+        this._moveScene(milliseconds);
+    }
+
+    _moveScene(milliseconds) {
+        // drawableObjects.push(new RandomObject());
+    }
+
+    _loop(timestamp) {
+        let elapsed = timestamp - this.last;
+        this.fps = Math.floor(1000 / elapsed);
+        this.last = timestamp;
+        ++this.frame;
+
+        this._update(elapsed);
+        this._render();
+
+        requestAnimationFrame(this._loop);
+    }
+
+    _installEventHandlers() {
+        this.onMouseDown = this.onMouseDown.bind(this);
+        this.onMouseUp = this.onMouseUp.bind(this);
+        this.onMouseMove = this.onMouseMove.bind(this);
+
+        document.addEventListener('mousedown', this.onMouseDown);
+        document.addEventListener('mouseup', this.onMouseUp);
+        document.addEventListener('mousemove', this.onMouseMove);
+    }
+
+    // --------------- EVENT HANDLERS --------------
+
+    onMouseMove(event) {
+        let point = {
+            x: event.clientX,
+            y: event.clientY
+        };
+
+        // Left mouse button
+        if (event.buttons == 1)  {
+            // Check for drawing
+            if (this.currentlyDrawn) {
+                this.currentlyDrawn.update(point.x, point.y);
+            }
+        }
+    }
+
+    onMouseDown(event) {
+        let point = {
+            x: event.clientX,
+            y: event.clientY
+        };
+
+        // Left mouse button
+        if (event.buttons == 1) {
+            // If not already drawing...
+            if (this.currentlyDrawn === undefined) {
+                console.log ('Start drawing');
+                // get create function, pass the point, initial size 0, color
+                let createShape = shapeSelector.selected.create;
+                this.currentlyDrawn = createShape(point, new RandomColor().css);
+                this.drawableObjects.push(this.currentlyDrawn);
+            }
+            // Center mouse button
+        } else if (event.buttons == 4) {
+            shapeSelector.nextShape();
+        }
+    }
+
+    onMouseUp(event) {
+        let point = {
+            x: event.clientX,
+            y: event.clientY
+        };
+
+        // Finish drawing
+        if (this.currentlyDrawn) {
+            // This is not needed after drawing is finished
+            // TODO: move this to class and leave for object manipulation
+            delete this.currentlyDrawn.update;
+            console.log ('Stopped drawing');
+            this.currentlyDrawn = undefined;
+        }
+    }
+}
+
+
 // ---------------- CODE ----------------
 
-// Set canvas w x h
-ctx.canvas.width = window.innerWidth;
-ctx.canvas.height = window.innerHeight;
-
-// Request first frame and install the callback
-window.requestAnimationFrame(gameLoop);
-
-
-// ----------- EVENT HANDLERS -----------
-
-document.addEventListener('mousedown', e => {
-    let point = {
-        x: e.clientX,
-        y: e.clientY
-    };
-
-    // Left mouse button
-    if (e.buttons == 1) {
-        // If not already drawing...
-        if (currentlyDrawn === undefined) {
-            console.log ('Start drawing');
-            // get create function, pass the point, initial size 0, color
-            let createShape = shapeSelector.selected.create;
-            currentlyDrawn = createShape(point, new RandomColor().css);
-            drawableObjects.push(currentlyDrawn);
-        }
-    // Center mouse button
-    } else if (e.buttons == 4) {
-        shapeSelector.nextShape();
-    }
-});
-
-document.addEventListener('mousemove', e => {
-    let point = {
-        x: e.clientX,
-        y: e.clientY
-    };
-
-    // Left mouse button
-    if (e.buttons == 1)  {
-        // Check for drawing
-        if (currentlyDrawn) {
-            currentlyDrawn.update(point.x, point.y);
-        }
-    }
-});
-
-document.addEventListener('mouseup', e => {
-    let point = {
-        x: e.clientX,
-        y: e.clientY
-    };
-
-    // Finish drawing
-    if (currentlyDrawn) {
-        // This is not needed after drawing is finished
-        // TODO: move this to class and leave for object manipulation
-        delete currentlyDrawn.update;
-        console.log ('Stopped drawing');
-        currentlyDrawn = undefined;
-    }
-})
-
-
-// ---------------- FUNCTIONS ----------------
-
-function Line(pointA, pointB, color) {
-    console.log(`Creating line: [${pointA.x}, ${pointA.y}] [${color}]`);
-    this.pointA = pointA;
-    this.pointB = pointB;
-    this.color = color;
-
-    this.draw = function () {
-        drawLine(this.pointA, this.pointB, this.color);
-    };
-
-    // Add update method with mouse coordinates
-    this.update = function (x, y) {
-        this.pointB = {x, y};
-    }
-}
-
-function Circle(centerPoint, r, color) {
-    console.log(`Creating circle: [${centerPoint.x}, ${centerPoint.y}] [${color}]`);
-    this.center = centerPoint;
-    this.radius = r;
-    this.color = color;
-
-    this.draw = function () {
-        drawCircle(this.center, this.radius, this.color);
-    };
-
-    // Add update method with mouse coordinates
-    this.update = function (x, y) {
-        this.radius = Math.sqrt(Math.pow(this.center.x - x, 2) + Math.pow(this.center.y - y, 2));
-    }
-}
-
-function Rectangle(upperLeft, width, height, color) {
-    console.log(`Creating rectangle: [${upperLeft.x}, ${upperLeft.y}] [${width}x${height}] [${color}]`);
-    this.upperLeft = upperLeft;
-    this.width = width;
-    this.height = height;
-    this.color = color;
-
-    this.draw = function () {
-        drawRectangle(this.upperLeft, this.width, this.height, this.color);
-    };
-
-    // Add update method with mouse coordinates
-    this.update = function (x, y) {
-        this.width =  x - this.upperLeft.x;
-        this.height =  y - this.upperLeft.y;
-    };
-}
-
-function RandomPoint() {
-    this.x = Math.floor(Math.random() * ctx.canvas.width);
-    this.y = Math.floor(Math.random() * ctx.canvas.height);
-}
-
-function RandomLength(max) {
-    this.value = Math.floor(Math.random() * max);
-}
-
-function RandomColor() {
-    this.value = Math.floor(Math.random() * 0xFFFFFF);
-    this.css = '#' + this.value.toString(16);
-}
-
-function RandomObject() {
-    let choice = Math.floor(Math.random() * shapeSelector.shapes.length);
-    let newObject = undefined;
-
-    switch (choice) {
-        case 0: newObject = new Line(new RandomPoint(), new RandomPoint(), new RandomColor().css);
-                break;
-        case 1: newObject = new Circle(new RandomPoint(), new RandomLength(300).value, new RandomColor().css);
-                break;
-        case 2: newObject = new Rectangle(new RandomPoint(), new RandomLength(300).value, new RandomLength(300).value, new RandomColor().css);
-                break;
-    }
-
-    return newObject;
-}
-
-function drawLine(pointA, pointB, color) {
-    if (color) {
-        ctx.strokeStyle = color;
-    }
-    ctx.beginPath();
-    ctx.moveTo(pointA.x, pointA.y);
-    ctx.lineTo(pointB.x, pointB.y);
-    ctx.stroke();
-}
-
-function drawCircle(centerPoint, r, color) {
-    if (color) {
-        ctx.fillStyle = color;
-    }
-
-    ctx.beginPath();
-    ctx.arc(centerPoint.x, centerPoint.y, r, 0, 2 * Math.PI);
-    ctx.fill();
-}
-
-function drawRectangle(upperLeft, width, height, color) {
-    if (color) {
-        ctx.fillStyle = color;
-    }
-
-    ctx.fillRect(upperLeft.x, upperLeft.y, width, height);
-}
-
-function drawFPS(fps, x = 0, y = 40) {
-    ctx.clearRect(0, 0, 60, 50);
-    ctx.font = '48px serif';
-    ctx.fillText(fps, x, y);
-}
-
-function drawObjectNumber(array) {
-    ctx.clearRect(0, 0, 160, 50);
-    ctx.font = '48px serif';
-    ctx.fillText(array.length, 0, 40);
-}
-
-function drawObjects() {
-    for (ob of drawableObjects) {
-        ob.draw();
-    }
-}
-
-function drawScene() {
-    drawObjects();
-    drawObjectNumber(drawableObjects);
-    // drawFPS(fps);
-}
-
-function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawScene();
-}
-
-function update(milliseconds) {
-    moveScene(milliseconds);
-}
-
-function moveScene(milliseconds) {
-    // drawableObjects.push(new RandomObject());
-
-}
-
-function gameLoop(timestamp) {
-    elapsed = timestamp - last;
-    fps = Math.floor(1000 / elapsed);
-    last = timestamp;
-    ++frame;
-
-    update(elapsed);
-    render();
-
-    requestAnimationFrame(gameLoop);
-}
+game = new Game('app-canvas');
+game.start();
