@@ -1,54 +1,66 @@
-// ---------------- DATA ----------------
+// --------------- DATA ----------------
 
-// Get HTML canvas
-let canvas = document.getElementById('app-canvas');
-let ctx = canvas.getContext('2d');
 
-// Canvas animation data
-let frame = 0n;
-let last = 0;
-let fps = 0;
-let elapsed = 0;
+// ------------- CLASSES ---------------
 
-let drawableObjects = [];
-let currentlyDrawn = undefined;
+class Shape {
 
-// Available shapes
-let shapeLine = {
+    constructor() {}
+
+}
+
+
+class ShapeLine {
+
+    constructor() {}
+
+    // TODO: abstract this out to Shape
     create(point, color) {
         return new Line(point, point, color);
     }
 }
 
-let shapeCircle = {
+
+class ShapeCircle {
+
+    constructor() {}
+
+    // TODO: abstract this out to Shape
     create(point, color) {
         return new Circle(point, 0, color);
     }
 }
 
-let shapeRectangle = {
+
+class ShapeRectangle {
+
+    constructor() {}
+
+    // TODO: abstract this out to Shape
     create(point, color) {
         return new Rectangle(point, 0, 0, color);
     }
 }
 
-let shapes = [shapeLine, shapeCircle, shapeRectangle];
 
-let shapeSelector = {
-    shapes: shapes,
-    selected: shapeLine,
+class ShapeSelector {
+
+    constructor() {
+        this.shapes = [new ShapeLine(), new ShapeCircle(), new ShapeRectangle()];
+        this.selected = this.shapes[0];
+    }
+
     select(shape) {
 
-    },
-    nextShape() {
-        let index = shapes.indexOf(this.selected);
-        let nextIndex = (index + 1 == shapes.length ? 0 : index + 1);
+    }
+
+    next() {
+        let index = this.shapes.indexOf(this.selected);
+        let nextIndex = (index + 1 == this.shapes.length ? 0 : index + 1);
         this.selected = this.shapes[nextIndex];
     }
 }
 
-
-// ---------------- CLASSES ------------------
 
 class Line {
 
@@ -180,8 +192,8 @@ class RandomColor {
 
 class RandomShape {
 
-    constructor() {
-        let choice = Math.floor(Math.random() * shapeSelector.shapes.length);
+    constructor(selector) {
+        let choice = Math.floor(Math.random() * selector.shapes.length);
         let newObject = undefined;
 
         switch (choice) {
@@ -216,6 +228,8 @@ class Game {
         this.drawableObjects = [];
         this.currentlyDrawn = undefined;
 
+        this.shapeSelector = new ShapeSelector();
+
         // Bind the function to object for animation callback
         this._loop = this._loop.bind(this);
 
@@ -233,14 +247,14 @@ class Game {
     }
 
     _drawObjectNumber(array, x = 0, y = 40) {
-        ctx.clearRect(0, 0, 160, 50);
-        ctx.font = '48px serif';
-        ctx.fillText(array.length, x, y);
+        this.ctx.clearRect(0, 0, 160, 50);
+        this.ctx.font = '48px serif';
+        this.ctx.fillText(array.length, x, y);
     }
 
     _drawObjects() {
         for (let ob of this.drawableObjects) {
-            ob.draw(ctx);
+            ob.draw(this.ctx);
         }
     }
 
@@ -251,7 +265,7 @@ class Game {
     }
 
     _render() {
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._drawScene();
     }
 
@@ -314,13 +328,13 @@ class Game {
             if (this.currentlyDrawn === undefined) {
                 console.log ('Start drawing');
                 // get create function, pass the point, initial size 0, color
-                let createShape = shapeSelector.selected.create;
+                let createShape = this.shapeSelector.selected.create;
                 this.currentlyDrawn = createShape(point, new RandomColor().css);
                 this.drawableObjects.push(this.currentlyDrawn);
             }
             // Center mouse button
         } else if (event.buttons == 4) {
-            shapeSelector.nextShape();
+            this.shapeSelector.next();
         }
     }
 
