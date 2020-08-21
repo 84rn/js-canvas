@@ -3,61 +3,67 @@
 
 // ------------- CLASSES ---------------
 
-class Shape {
+class Brush {
 
     constructor() {}
 
+    create(point, color) {
+    }
 }
 
 
-class ShapeLine {
+class BrushLine extends Brush {
 
-    constructor() {}
+    constructor() {
+        // Must call super() before using 'this' (implicitly by returning)
+        super();
+    }
 
-    // TODO: abstract this out to Shape
     create(point, color) {
         return new Line(point, point, color);
     }
 }
 
 
-class ShapeCircle {
+class BrushCircle extends Brush {
 
-    constructor() {}
+    constructor() {
+        super();
+    }
 
-    // TODO: abstract this out to Shape
     create(point, color) {
         return new Circle(point, 0, color);
     }
 }
 
 
-class ShapeRectangle {
+class BrushRectangle extends Brush {
 
-    constructor() {}
+    constructor() {
+        super();
+    }
 
-    // TODO: abstract this out to Shape
     create(point, color) {
         return new Rectangle(point, 0, 0, color);
     }
 }
 
 
-class ShapeSelector {
+class BrushSelector {
 
     constructor() {
-        this.shapes = [new ShapeLine(), new ShapeCircle(), new ShapeRectangle()];
-        this.selected = this.shapes[0];
+        this.brushes = [new BrushLine(), new BrushCircle(), new BrushRectangle()];
+        this.selected = this.brushes[0];
     }
 
-    select(shape) {
+    select(brush) {
 
     }
 
     next() {
-        let index = this.shapes.indexOf(this.selected);
-        let nextIndex = (index + 1 == this.shapes.length ? 0 : index + 1);
-        this.selected = this.shapes[nextIndex];
+        let index = this.brushes.indexOf(this.selected);
+        let nextIndex = (index + 1 == this.brushes.length ? 0 : index + 1);
+        this.selected = this.brushes[nextIndex];
     }
 }
 
@@ -193,7 +199,7 @@ class RandomColor {
 class RandomShape {
 
     constructor(selector) {
-        let choice = Math.floor(Math.random() * selector.shapes.length);
+        let choice = Math.floor(Math.random() * selector.brushes.length);
         let newObject = undefined;
 
         switch (choice) {
@@ -228,7 +234,7 @@ class Game {
         this.drawableObjects = [];
         this.currentlyDrawn = undefined;
 
-        this.shapeSelector = new ShapeSelector();
+        this.brushSelector = new BrushSelector();
 
         // Bind the function to object for animation callback
         this._loop = this._loop.bind(this);
@@ -328,13 +334,13 @@ class Game {
             if (this.currentlyDrawn === undefined) {
                 console.log ('Start drawing');
                 // get create function, pass the point, initial size 0, color
-                let createShape = this.shapeSelector.selected.create;
-                this.currentlyDrawn = createShape(point, new RandomColor().css);
+                let createBrush = this.brushSelector.selected.create;
+                this.currentlyDrawn = createBrush(point, new RandomColor().css);
                 this.drawableObjects.push(this.currentlyDrawn);
             }
             // Center mouse button
         } else if (event.buttons == 4) {
-            this.shapeSelector.next();
+            this.brushSelector.next();
         }
     }
 
